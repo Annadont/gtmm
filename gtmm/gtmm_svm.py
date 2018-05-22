@@ -1,4 +1,22 @@
+import numpy as np
 from sklearn import svm
+from fbprophet import Prophet
+import pandas as pd
+import datetime
+
+def combineInputSources(prophet_trained, twitter_setiment, price_every_x_hours, curr_price, curr_time, delta_hours=6):
+	time_to_predict = datetime.datetime(curr_time) + datetime.timedelta(hours=delta_hours)
+	future_df = pd.DataFrame({'ds':[ time_to_predict ]}).tail()
+	predicted_df = prophet_trained.predict(future_df)
+	prediction = predicted_df[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail()['yhat']
+
+	return np.concatenate([ 
+					prediction.values[0], 
+					np.array(twitter_setiment), 
+		  		np.array(curr_price), 
+					price_every_x_hours
+				]).T
+
 
 class GtmmSVM():
 	def __init__(self, kernel='linear'): 
