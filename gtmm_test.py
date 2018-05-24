@@ -8,6 +8,7 @@ import numpy as np
 curr_price_tool = CurrPrice()
 
 def make_x(curr_time):
+  '''Returns an X input row given a time'''
   prohpet_prices = curr_price_tool.get_previous_price(period=1, end_date=curr_time)
   prophet_trainer = GtmmProphet(prohpet_prices)
   prophet_trainer.train_prophet()
@@ -18,7 +19,7 @@ def make_x(curr_time):
   pub_sent_X = pub_sent.makeInputData(previous_time)
   pub_sent_y = pub_sent.calculateY(pub_sent_X, previous_time)
   pub_sent.train(pub_sent_X, pub_sent_y)
-  
+
   pub_sent_yhat = pub_sent.predict(curr_time) ## get some data in the target time
 
   week_prices = curr_price_tool.get_previous_price(period=60, start_date=curr_time - timedelta(hours=28), end_date=curr_time)['y']
@@ -28,6 +29,7 @@ def make_x(curr_time):
 
 
 def make_x_y(curr_time):
+  '''Returns an X input and y output row given a time (assuming there is a future time'''
   X = make_x(curr_time)
   curr_price = curr_price_tool.get_current_price(date=curr_time)
   future_price = curr_price_tool.get_current_price(date=curr_time + timedelta(hours=6))
@@ -35,13 +37,14 @@ def make_x_y(curr_time):
 
   return X, y
 
-
 def predict(clf, curr_time):
+  '''Predicts a value in the future based on a trained svm and the time to predict'''
   X = make_x(curr_time)
   return clf.predict(X)
 
 
 def main():
+  '''Sets up the inputs, outputs, svm, and data. Trains, tests, and reports accuracy'''
 
   prohpet_prices = curr_price_tool.get_previous_price(period=1, end_date=datetime.now())
   train_examples_len = len(prohpet_prices)
