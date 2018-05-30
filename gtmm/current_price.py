@@ -3,10 +3,11 @@ import pandas as pd
 from datetime import datetime as dt
 
 
+
 class CurrentPrice:
 
     def __init__(self, data_path):
-        self.data = pd.DataFrame.from_csv(path=data_path, sep=",")
+        self.data = pd.read_csv(data_path, sep=",")
         self.data = self.data.drop(columns=["Open", "High", "Low", "Close", "Volume_(BTC)", "Volume_(Currency)"])
         self.data = self.data.reset_index()
         self.data = self.data.rename(index=str, columns={"Timestamp": "ds", "Weighted_Price": "y"})
@@ -20,17 +21,20 @@ class CurrentPrice:
         return data["USD"]
 
     def get_previous_price(self, start_date, end_date, period_minutes=1):
-        min_time = self.data.get_value(0, "ds").to_pydatetime()
-        max_time = self.data.get_value(len(self.data) - 1, "ds").to_pydatetime()
-        start_date = dt.strptime(start_date, "%Y-%m-%d %H:%M:%S")
-        end_date = dt.strptime(end_date, "%Y-%m-%d %H:%M:%S")
+        min_time = self.data['ds'][0].to_pydatetime()
+        max_time = self.data['ds'][len(self.data) - 1].to_pydatetime()
+
+        if not isinstance(start_date, dt) or not isinstance(end_date, dt):
+            start_date = dt.strptime(start_date, "%Y-%m-%d %H:%M:%S")
+            end_date = dt.strptime(end_date, "%Y-%m-%d %H:%M:%S")
+
         assert min_time <= start_date
         assert max_time >= end_date
         assert start_date <= end_date
         start_index = self.data.index[self.data["ds"] == start_date][0]
         end_index = self.data.index[self.data["ds"] == end_date][0]
-        sliced_data = self.data[start_index:end_index + 1]
-        return sliced_data.iloc[::period_minutes]
+        sliced_data = self.data[int(start_index):int(end_index) + 1]
+        return sliced_data.iloc[::period_minutes, :]
 
         '''
     def get_previous_price(period_minutes=1,start_date,end_date):
