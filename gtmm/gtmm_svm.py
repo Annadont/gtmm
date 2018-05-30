@@ -5,6 +5,7 @@ import pandas as pd
 import datetime
 
 def combine_input_sources(prophet_trained, twitter_setiment, price_every_x_hours, curr_price, curr_time, delta_hours=6):
+	''''''
 	time_to_predict = datetime.datetime(curr_time) + datetime.timedelta(hours=delta_hours)
 	future_df = pd.DataFrame({'ds':[ time_to_predict ]}).tail()
 	predicted_df = prophet_trained.predict(future_df)
